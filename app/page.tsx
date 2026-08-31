@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDownRight, ArrowUpRight, Mail, MapPin } from 'lucide-react';
+import { ArrowDownRight, ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react';
 import {
   CartesianGrid,
   LabelList,
@@ -202,6 +202,13 @@ export default function Home() {
         </div>
       </nav>
 
+      <div className="contact-bar section-shell" aria-label="Contact information">
+        <span><MapPin size={14} /> Guangzhou, China</span>
+        <a href="tel:+8618620445753"><Phone size={14} /> +86 186 2044 5753</a>
+        <a href="mailto:dragoonqp@outlook.com"><Mail size={14} /> dragoonqp@outlook.com</a>
+        <span>CEFR C1 English</span>
+      </div>
+
       <section id="top" className="hero section-shell">
         <div className="eyebrow">
           <span className="pulse" />
@@ -261,7 +268,7 @@ export default function Home() {
                 <CartesianGrid
                   strokeDasharray="2 7"
                   vertical={false}
-                  stroke="#ffffff18"
+                  stroke="#17211b18"
                 />
                 <XAxis
                   type="number"
@@ -285,12 +292,12 @@ export default function Home() {
                 <ZAxis type="number" dataKey="impact" range={[160, 760]} />
                 <ReferenceLine
                   x={85}
-                  stroke="#ffffff25"
+                  stroke="#17211b30"
                   strokeDasharray="4 5"
                   label={{
                     value: 'CORE ZONE',
                     position: 'insideTopRight',
-                    fill: '#676b70',
+                    fill: '#7d827d',
                     fontSize: 9,
                   }}
                 />
@@ -303,7 +310,7 @@ export default function Home() {
                     dataKey="name"
                     position="top"
                     offset={12}
-                    fill="#a9aaac"
+                    fill="#535b55"
                     fontSize={10}
                   />
                 </Scatter>

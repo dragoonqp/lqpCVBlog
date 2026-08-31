@@ -1,12 +1,12 @@
 @import 'tailwindcss';
 
 :root {
-  --ink: #0b0d10;
-  --paper: #f2eee6;
-  --muted: #999b9e;
-  --gold: #ffb454;
-  --blue: #8ec5ff;
-  --line: #ffffff1d;
+  --ink: #f5f1e8;
+  --paper: #17211b;
+  --muted: #687169;
+  --gold: #b85f36;
+  --blue: #356e7c;
+  --line: #17211b20;
 }
 * {
   box-sizing: border-box;
@@ -32,6 +32,26 @@ a {
   width: min(1240px, calc(100% - 48px));
   margin: 0 auto;
 }
+.contact-bar {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 24px;
+  border-bottom: 1px solid var(--line);
+  color: #657068;
+  font: 10px monospace;
+  letter-spacing: 0.03em;
+}
+.contact-bar span,
+.contact-bar a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.contact-bar a:hover {
+  color: var(--gold);
+}
 .nav-shell {
   height: 92px;
   display: flex;
@@ -51,7 +71,7 @@ a {
   display: flex;
   gap: 32px;
   font-size: 13px;
-  color: #c8c6c1;
+  color: #626b64;
 }
 .nav-links a {
   transition: color 0.2s;
@@ -76,7 +96,7 @@ a {
   font: 600 11px/1.2 monospace;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #a9aaa9;
+  color: #737b74;
 }
 .pulse {
   display: inline-block;
@@ -110,13 +130,13 @@ a {
   width: min(560px, 60%);
   font-size: 20px;
   line-height: 1.5;
-  color: #d1cfca;
+  color: #414b43;
 }
 .hero-meta {
   display: flex;
   gap: 24px;
   font: 12px monospace;
-  color: #9b9c9d;
+  color: #687169;
 }
 .hero-meta span {
   display: flex;
@@ -147,7 +167,7 @@ a {
 }
 .chart-card {
   border: 1px solid var(--line);
-  background: #121519;
+  background: #ebe5d9;
   padding: 28px 32px 18px;
 }
 .chart-head {
@@ -156,7 +176,7 @@ a {
   align-items: center;
   font: 10px monospace;
   letter-spacing: 0.12em;
-  color: #8f9295;
+  color: #666f68;
 }
 .filters {
   display: flex;
@@ -165,7 +185,7 @@ a {
 .filters button {
   border: 1px solid transparent;
   background: transparent;
-  color: #777b80;
+  color: #69716b;
   padding: 7px 10px;
   cursor: pointer;
   font: 10px monospace;
@@ -173,32 +193,32 @@ a {
 }
 .filters button:hover,
 .filters button.active {
-  border-color: #ffffff30;
+  border-color: #17211b32;
   color: var(--paper);
-  background: #ffffff09;
+  background: #17211b09;
 }
 .recharts-text {
-  fill: #777b80;
+  fill: #687169;
   font-size: 11px;
   font-family: monospace;
 }
 .recharts-scatter-symbol {
-  filter: drop-shadow(0 0 9px #ffffff22);
-  stroke: #0b0d10;
+  filter: drop-shadow(0 5px 9px #17211b18);
+  stroke: #ebe5d9;
   stroke-width: 3;
 }
 .chart-tip {
   display: grid;
   gap: 5px;
   padding: 12px 14px;
-  background: #f2eee6;
-  color: #101215;
-  box-shadow: 0 14px 40px #0008;
+  background: #17211b;
+  color: #f5f1e8;
+  box-shadow: 0 14px 40px #17211b30;
 }
 .chart-tip span,
 .chart-tip small {
   font: 11px monospace;
-  color: #65676a;
+  color: #c7c9c4;
 }
 .chart-tip small {
   font-size: 9px;
@@ -209,7 +229,7 @@ a {
   justify-content: space-between;
   font: 10px monospace;
   text-transform: uppercase;
-  color: #62666b;
+  color: #737b74;
   padding-left: 48px;
 }
 .capability-strip {
@@ -227,7 +247,7 @@ a {
 }
 .capability-strip span {
   display: block;
-  color: #666a6f;
+  color: #747c75;
   font: 9px monospace;
   margin-bottom: 8px;
 }
@@ -251,7 +271,7 @@ a {
 .role-index,
 .role-date {
   font: 10px monospace;
-  color: #686c70;
+  color: #727a73;
 }
 .role-main {
   max-width: 760px;
@@ -266,8 +286,8 @@ a {
   margin: 0;
 }
 .role-title > span {
-  border: 1px solid #76d69a55;
-  color: #76d69a;
+  border: 1px solid #39765b66;
+  color: #39765b;
   padding: 6px 9px;
   font: 9px monospace;
   text-transform: uppercase;
@@ -279,7 +299,7 @@ a {
   text-transform: uppercase;
 }
 .role-main p {
-  color: #a5a6a6;
+  color: #5d665f;
   line-height: 1.65;
   max-width: 670px;
 }
@@ -290,10 +310,10 @@ a {
   margin-top: 18px;
 }
 .tags span {
-  border: 1px solid #ffffff20;
+  border: 1px solid #17211b20;
   padding: 6px 9px;
   font: 9px monospace;
-  color: #898c90;
+  color: #667068;
 }
 .selected {
   padding: 70px 0 110px;
@@ -325,7 +345,7 @@ a {
 }
 .impact-grid span {
   display: block;
-  color: #8d9093;
+  color: #687169;
   font-size: 12px;
   margin-top: 12px;
   line-height: 1.4;
@@ -365,7 +385,7 @@ a {
   margin: 70px 0 16px;
 }
 .article-grid p {
-  color: #929497;
+  color: #606961;
   font-size: 13px;
   line-height: 1.6;
 }
@@ -374,7 +394,7 @@ a {
   padding: 0;
   border: 0;
   background: none;
-  color: #d0cfca;
+  color: #303a33;
   display: flex;
   gap: 8px;
   align-items: center;
@@ -403,12 +423,12 @@ footer {
   align-items: center;
   justify-content: space-between;
   font-size: 12px;
-  color: #777b80;
+  color: #687169;
 }
 footer a {
   display: flex;
   gap: 8px;
-  color: #aaa;
+  color: #4f5a52;
 }
 @media (max-width: 800px) {
   .section-shell,
@@ -417,6 +437,13 @@ footer a {
   }
   .nav-links a:not(:last-child) {
     display: none;
+  }
+  .contact-bar {
+    min-height: 74px;
+    padding: 12px 0;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px 18px;
   }
   .hero {
     min-height: 620px;
