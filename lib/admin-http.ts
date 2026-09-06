@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InputError, sessionUser } from '@/server/store.cjs';
 export const cookieName = 'resume_admin_session';
-export function requireAdmin(request: NextRequest) {
+export async function requireAdmin(request: NextRequest) {
   const token = request.cookies.get(cookieName)?.value;
-  if (!sessionUser(token)) throw new InputError('请先登录管理账号', 401);
+  if (!(await sessionUser(token)))
+    throw new InputError('请先登录管理账号', 401);
   return token;
 }
 export async function readBody(request: NextRequest) {

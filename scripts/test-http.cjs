@@ -1,3 +1,11 @@
+for (const key of [
+  'TURSO_DATABASE_URL',
+  'TURSO_AUTH_TOKEN',
+  'RESUME_ADMIN_PASSWORD',
+  'RESUME_ADMIN_USERNAME',
+  'VERCEL',
+])
+  process.env[key] = '';
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const { mkdtempSync, rmSync } = require('node:fs');

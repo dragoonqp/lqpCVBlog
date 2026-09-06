@@ -40,3 +40,5 @@ next-env.d.ts
 # Local resume database and initial admin credentials
 /data/*.sqlite*
 /.admin-credentials.txt
+
+!.env.example

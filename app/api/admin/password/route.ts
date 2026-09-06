@@ -11,7 +11,7 @@ import {
 export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
-    const token = requireAdmin(request);
+    const token = await requireAdmin(request);
     const body = await readBody(request);
     await changePassword(token, body?.current, body?.next);
     const response = json({ ok: true });

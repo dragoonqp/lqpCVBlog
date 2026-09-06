@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await readBody(request);
     const token = await login(body?.username, body?.password);
-    logout(request.cookies.get(cookieName)?.value);
+    await logout(request.cookies.get(cookieName)?.value);
     const response = json({ ok: true });
     response.cookies.set(cookieName, token, sessionCookie(request));
     return response;
