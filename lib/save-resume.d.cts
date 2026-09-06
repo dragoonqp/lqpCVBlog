@@ -5,6 +5,6 @@ export class DraftConflict extends Error {
 export function saveWithRebase(
   baseline: ResumeData,
   draft: ResumeData,
-  put: (data: ResumeData) => Promise<ResumeData>,
+  put: (data: ResumeData, baseline: ResumeData) => Promise<ResumeData>,
   get: () => Promise<ResumeData>,
 ): Promise<ResumeData>;

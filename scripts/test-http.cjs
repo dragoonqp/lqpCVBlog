@@ -124,6 +124,38 @@ async function send(
     ).json();
     assert.deepEqual(persisted.contacts, draft.contacts);
     assert.ok(publicPage.includes('Click me'));
+    const external = await (
+      await send(
+        '/api/admin/resume',
+        'PUT',
+        { ...saved, contacts: { ...saved.contacts, location: 'Other tab' } },
+        cookie,
+      )
+    ).json();
+    const recoveredDraft = structuredClone(saved);
+    recoveredDraft.roles[0].summary =
+      'A draft preserved across another tab update';
+    const recoveredResponse = await send(
+      '/api/admin/resume',
+      'PUT',
+      { ...recoveredDraft, baseline: saved },
+      cookie,
+    );
+    assert.equal(recoveredResponse.status, 200);
+    const recovered = await recoveredResponse.json();
+    assert.equal(recovered.contacts.location, 'Other tab');
+    assert.equal(recovered.roles[0].summary, recoveredDraft.roles[0].summary);
+    assert.equal(recovered.revision, external.revision + 1);
+    const replay = await (
+      await send(
+        '/api/admin/resume',
+        'PUT',
+        { ...recoveredDraft, baseline: saved },
+        cookie,
+      )
+    ).json();
+    assert.equal(replay.revision, recovered.revision);
+
     assert.equal(
       (await send('/api/admin/resume', 'PUT', initial, cookie)).status,
       409,

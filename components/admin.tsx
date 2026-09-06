@@ -362,7 +362,11 @@ export default function Admin({
               next = await saveWithRebase(
                 JSON.parse(baseline),
                 data,
-                (value) => request('/api/admin/resume', 'PUT', value),
+                (value, base) =>
+                  request('/api/admin/resume', 'PUT', {
+                    ...value,
+                    baseline: base,
+                  }),
                 loadLatest,
               );
             } catch (failure) {

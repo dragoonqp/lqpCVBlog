@@ -3,6 +3,7 @@ import { readResume, saveResume } from '@/server/store.cjs';
 import { failure, json, readBody, requireAdmin } from '@/lib/admin-http';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 export async function GET(request: NextRequest) {
   try {
     await requireAdmin(request);

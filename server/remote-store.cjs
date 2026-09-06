@@ -1,3 +1,4 @@
+const { resolveSave, sameContent } = require('./resolve-save.cjs');
 const { createClient } = require('@libsql/client/web');
 const { randomBytes, createHash } = require('node:crypto');
 const {
@@ -37,7 +38,12 @@ function openClient() {
     parsed.password
   )
     throw new InputError('云端数据库必须使用 libsql:// 或 https:// 地址', 503);
-  return createClient({ url, authToken });
+  return createClient({
+    url,
+    authToken,
+    fetch: (input, init) =>
+      globalThis.fetch(input, { ...init, cache: 'no-store' }),
+  });
 }
 function writeStatements(data) {
   return [
@@ -135,24 +141,30 @@ function createRemoteStore(client, options = {}) {
     };
   }
   async function saveResume(input) {
-    const data = validateResume(input),
-      db = await ready();
+    const data = validateResume(input);
+    const baseline =
+      input.baseline === undefined ? null : validateResume(input.baseline);
+    const db = await ready();
     return transaction(db, 'write', async (tx) => {
-      if (
-        Number(
-          (await tx.execute('SELECT revision FROM metadata WHERE id=1')).rows[0]
-            .revision,
-        ) !== data.revision
-      )
-        throw new InputError(
-          '数据已被其他页面修改，请重新载入后再编辑。当前草稿尚未保存。',
-          409,
-        );
+      const rows = await tx.batch([
+        'SELECT revision FROM metadata WHERE id=1',
+        'SELECT payload FROM work_experiences ORDER BY position',
+        'SELECT payload FROM technical_skills ORDER BY position',
+        'SELECT payload FROM contact_info WHERE id=1',
+      ]);
+      const current = {
+        revision: Number(rows[0].rows[0].revision),
+        roles: rows[1].rows.map((row) => JSON.parse(row.payload)),
+        skills: rows[2].rows.map((row) => JSON.parse(row.payload)),
+        contacts: JSON.parse(rows[3].rows[0].payload),
+      };
+      const merged = resolveSave(data, baseline, current, InputError);
+      if (sameContent(merged, current)) return current;
       await tx.batch([
-        ...writeStatements(data),
+        ...writeStatements(merged),
         'UPDATE metadata SET revision=revision+1 WHERE id=1',
       ]);
-      return { ...data, revision: data.revision + 1 };
+      return { ...merged, revision: current.revision + 1 };
     });
   }
   const tokenHash = (token) => createHash('sha256').update(token).digest('hex');

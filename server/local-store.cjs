@@ -1,3 +1,4 @@
+const { resolveSave, sameContent } = require('./resolve-save.cjs');
 const { mkdirSync } = require('node:fs');
 const path = require('node:path');
 const {
@@ -210,24 +211,40 @@ function validateResume(input) {
   return { revision: data.revision, roles, skills, contacts };
 }
 function saveResume(input) {
-  const data = validateResume(input),
-    database = db();
+  const data = validateResume(input);
+  const baseline =
+    input.baseline === undefined ? null : validateResume(input.baseline);
+  const database = db();
   database.exec('BEGIN IMMEDIATE');
   try {
-    if (
-      database.prepare('SELECT revision FROM metadata WHERE id=1').get()
-        .revision !== data.revision
-    )
-      throw new InputError(
-        '数据已被其他页面修改，请先重新载入后再编辑。当前草稿尚未保存。',
-        409,
-      );
-    writeRows(database, data);
+    const current = {
+      revision: database
+        .prepare('SELECT revision FROM metadata WHERE id=1')
+        .get().revision,
+      roles: database
+        .prepare('SELECT payload FROM work_experiences ORDER BY position')
+        .all()
+        .map((row) => JSON.parse(row.payload)),
+      skills: database
+        .prepare('SELECT payload FROM technical_skills ORDER BY position')
+        .all()
+        .map((row) => JSON.parse(row.payload)),
+      contacts: JSON.parse(
+        database.prepare('SELECT payload FROM contact_info WHERE id=1').get()
+          .payload,
+      ),
+    };
+    const merged = resolveSave(data, baseline, current, InputError);
+    if (sameContent(merged, current)) {
+      database.exec('COMMIT');
+      return current;
+    }
+    writeRows(database, merged);
     database
       .prepare('UPDATE metadata SET revision=revision+1 WHERE id=1')
       .run();
     database.exec('COMMIT');
-    return { ...data, revision: data.revision + 1 };
+    return { ...merged, revision: current.revision + 1 };
   } catch (error) {
     database.exec('ROLLBACK');
     throw error;

@@ -3,6 +3,7 @@ import { readResume, sessionUser } from '@/server/store.cjs';
 import Admin from '@/components/admin';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 export const metadata = {
   title: '简历数据管理',
   robots: { index: false, follow: false },
