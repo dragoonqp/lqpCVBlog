@@ -36,3 +36,7 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+
+# Local resume database and initial admin credentials
+/data/*.sqlite*
+/.admin-credentials.txt

@@ -10,7 +10,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "oxlint",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "admin:init": "node scripts/init-admin.cjs",
+    "test": "node --test tests/*.test.cjs"
   },
   "dependencies": {
     "next": "14.2.32",

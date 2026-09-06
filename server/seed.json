@@ -1,0 +1,168 @@
+{
+  "revision": 0,
+  "roles": [
+    {
+      "dates": "2025.09 — 2026.07",
+      "company": "CEC GienTech",
+      "role": "Specialist Engineer · P8",
+      "summary": "Full-stack delivery for HSBC service management systems, spanning Vue 3, React, Java Spring, SQL Server and automated UAT deployments.",
+      "tags": ["Vue 3", "React", "Java", "Jenkins"],
+      "stat": "",
+      "id": "role-1"
+    },
+    {
+      "dates": "2021.12 — 2025.08",
+      "company": "iSoftStone",
+      "role": "Senior Front-End Engineer",
+      "summary": "Architected Midea’s quality and manufacturing data platform from zero, including responsive workflows, geographic analytics and Three.js scenes.",
+      "tags": ["Vue 3", "ECharts", "Three.js", "DevOps"],
+      "stat": "0 critical defects",
+      "id": "role-2"
+    },
+    {
+      "dates": "2020.08 — 2021.11",
+      "company": "Chinasoft International",
+      "role": "Front-End Engineer",
+      "summary": "Built HSBC hybrid applications for innovation proposals and workspace booking, including granular permissions and gesture-rich floor maps.",
+      "tags": ["Vue", "React", "Hybrid H5", "Redux"],
+      "stat": "",
+      "id": "role-3"
+    },
+    {
+      "dates": "2019.07 — 2020.07",
+      "company": "Xinshihonghui",
+      "role": "Front-End Engineer",
+      "summary": "Delivered reusable enterprise order-management modules and high-level editable table and validation components for Guangzhou Unicom.",
+      "tags": ["React", "Dva.js", "Ant Design"],
+      "stat": "",
+      "id": "role-4"
+    }
+  ],
+  "skills": [
+    {
+      "name": "JavaScript",
+      "level": 97,
+      "years": 7,
+      "impact": 10,
+      "group": "Frontend",
+      "fill": "#ffb454",
+      "id": "skill-1"
+    },
+    {
+      "name": "HTML / CSS",
+      "level": 96,
+      "years": 7,
+      "impact": 10,
+      "group": "Frontend",
+      "fill": "#ffb454",
+      "id": "skill-2"
+    },
+    {
+      "name": "Vue",
+      "level": 95,
+      "years": 5.7,
+      "impact": 9,
+      "group": "Frontend",
+      "fill": "#ffb454",
+      "id": "skill-3"
+    },
+    {
+      "name": "TypeScript",
+      "level": 90,
+      "years": 4.5,
+      "impact": 8,
+      "group": "Frontend",
+      "fill": "#ffb454",
+      "id": "skill-4"
+    },
+    {
+      "name": "React",
+      "level": 83,
+      "years": 2.8,
+      "impact": 7,
+      "group": "Frontend",
+      "fill": "#8ec5ff",
+      "id": "skill-5"
+    },
+    {
+      "name": "ECharts",
+      "level": 84,
+      "years": 3.7,
+      "impact": 8,
+      "group": "Visual",
+      "fill": "#8ec5ff",
+      "id": "skill-6"
+    },
+    {
+      "name": "Java",
+      "level": 79,
+      "years": 1.6,
+      "impact": 6,
+      "group": "Full-stack",
+      "fill": "#8ec5ff",
+      "id": "skill-7"
+    },
+    {
+      "name": "SQL",
+      "level": 76,
+      "years": 1.6,
+      "impact": 6,
+      "group": "Full-stack",
+      "fill": "#8ec5ff",
+      "id": "skill-8"
+    },
+    {
+      "name": "Three.js",
+      "level": 70,
+      "years": 1.2,
+      "impact": 5,
+      "group": "Visual",
+      "fill": "#b797ff",
+      "id": "skill-9"
+    },
+    {
+      "name": "Tailwind",
+      "level": 68,
+      "years": 0.8,
+      "impact": 4,
+      "group": "Frontend",
+      "fill": "#b797ff",
+      "id": "skill-10"
+    },
+    {
+      "id": "skill-11",
+      "name": "Jenkins",
+      "group": "Engineering",
+      "level": null,
+      "years": null,
+      "impact": 5,
+      "fill": "#6c9a90"
+    },
+    {
+      "id": "skill-12",
+      "name": "DevOps",
+      "group": "Engineering",
+      "level": null,
+      "years": null,
+      "impact": 5,
+      "fill": "#6c9a90"
+    },
+    {
+      "id": "skill-13",
+      "name": "AI-assisted development",
+      "group": "Engineering",
+      "level": null,
+      "years": null,
+      "impact": 5,
+      "fill": "#6c9a90"
+    }
+  ],
+  "contacts": {
+    "phone": "+86 186 2044 5753",
+    "email": "dragoonqp@outlook.com",
+    "location": "Guangzhou, China",
+    "linkedin": "",
+    "whatsapp": "",
+    "telegram": ""
+  }
+}
