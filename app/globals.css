@@ -851,3 +851,17 @@ footer {
     display: none;
   }
 }
+
+/* Keep work descriptions exactly as entered, including blank lines and indentation. */
+.role-description li, .admin-shell textarea {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  tab-size: 4;
+}
+[data-slot="toast"] {
+  background: #fff;
+  color: var(--ink);
+  border-color: #cce5d6;
+}
+[data-slot="toast-icon"] { color: #238450; }
+[data-slot="toast-description"] { color: var(--muted); }

@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { Contacts, ResumeData, Role, Skill } from '@/lib/resume-types';
 import { saveWithRebase, DraftConflict } from '@/lib/save-resume.cjs';
+import { Toaster, toast } from '@/components/ui/toast';
 import { skillGroups } from '@/lib/resume-types';
 
 async function request(url: string, method: string, body: unknown) {
@@ -50,7 +51,11 @@ const contactFields: {
     type: 'url',
   },
 ];
-export default function Admin({
+export default function Admin(props: { initialData: ResumeData | null }) {
+  return <Toaster timeout={4500}><AdminEditor {...props} /></Toaster>;
+}
+
+function AdminEditor({
   initialData,
 }: {
   initialData: ResumeData | null;
@@ -376,7 +381,7 @@ export default function Admin({
             setHasConflict(false);
             setData(next);
             setBaseline(JSON.stringify(next));
-            setMessage('已保存，简历页面刷新后即可查看。');
+            toast.add({ title: '保存成功', description: '简历内容已更新。', type: 'success' });
             if ('BroadcastChannel' in window) {
               const channel = new BroadcastChannel('resume-updates');
               channel.postMessage('saved');

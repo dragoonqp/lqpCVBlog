@@ -20,3 +20,19 @@ test('Chinese work fields survive validation without changing the 200-character 
   data.roles[0].tags = ['x'.repeat(201)];
   assert.throws(() => validateResume(data));
 });
+
+test('Multiline descriptions preserve spacing in both languages and reject blank required text', () => {
+  const data = structuredClone(require('../server/seed.json'));
+  const en = '\n  First line\n\n    Second line\n';
+  const zh = '\n  第一行\n\n    第二行\n';
+  data.roles[0].summary = en;
+  data.roles[0].summaryZh = zh;
+  const result = validateResume(data);
+  assert.equal(result.roles[0].summary, en);
+  assert.equal(result.roles[0].summaryZh, zh);
+  assert.equal(translate(en, 'en', zh), en);
+  assert.equal(translate(en, 'zh', zh), zh);
+  assert.equal(translate(en, 'zh', '  \n'), en);
+  data.roles[0].summary = '  \n';
+  assert.throws(() => validateResume(data));
+});

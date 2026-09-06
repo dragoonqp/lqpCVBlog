@@ -24,11 +24,15 @@ test('SQLite seeds existing content, validates, persists ordered edits and preve
   assert.equal(initial.skills.length, 13);
   const next = structuredClone(initial);
   next.roles.reverse();
+  next.roles[0].summary = '\n  Led delivery\n\n    - Released feature\n';
+  next.roles[0].summaryZh = '\n  负责交付\n\n    - 完成功能上线\n';
   next.roles[0].company = "Company'); DROP TABLE admins; --";
   next.contacts.linkedin = 'https://www.linkedin.com/in/test';
   next.skills[0].level = 0;
   const saved = store.saveResume(next);
   assert.equal(saved.revision, 1);
+  assert.equal(saved.roles[0].summary, next.roles[0].summary);
+  assert.equal(saved.roles[0].summaryZh, next.roles[0].summaryZh);
   assert.deepEqual(store.readResume(), saved);
   assert.throws(
     () => store.saveResume(initial),

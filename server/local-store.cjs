@@ -103,14 +103,14 @@ function object(value) {
     throw new InputError('数据格式不正确');
   return value;
 }
-function text(value, label, max = 200, required = true) {
+function text(value, label, max = 200, required = true, preserveWhitespace = false) {
   if (
     typeof value !== 'string' ||
     value.length > max ||
     (required && !value.trim())
   )
     throw new InputError(`${label}不能为空且不能超过 ${max} 字符`);
-  return value.trim();
+  return preserveWhitespace ? value : value.trim();
 }
 function number(value, label, max, nullable = false) {
   if (nullable && value === null) return null;
@@ -148,12 +148,12 @@ function validateResume(input) {
         ? { roleZh: text(row.roleZh, '中文职位', 200, false) }
         : {}),
       ...(row.summaryZh !== undefined
-        ? { summaryZh: text(row.summaryZh, '中文经历描述', 10000, false) }
+        ? { summaryZh: text(row.summaryZh, '中文经历描述', 10000, false, true) }
         : {}),
       company: text(row.company, '公司'),
       role: text(row.role, '职位'),
       dates: text(row.dates, '日期'),
-      summary: text(row.summary, '经历描述', 10000),
+      summary: text(row.summary, '经历描述', 10000, true, true),
       stat: text(row.stat, '成果', 200, false),
       tags: row.tags.map((tag) => text(tag, '标签', 200)),
     };
