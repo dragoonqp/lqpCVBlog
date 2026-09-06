@@ -117,6 +117,12 @@ async function send(
     assert.ok(publicPage.includes('Integration Company'));
     assert.ok(publicPage.includes('Integration test location'));
     assert.ok(publicPage.includes('https://t.me/test'));
+    assert.ok(publicPage.includes('https://www.linkedin.com/in/test'));
+    assert.ok(publicPage.includes('https://wa.me/123456789'));
+    const persisted = await (
+      await send('/api/admin/resume', 'GET', undefined, cookie)
+    ).json();
+    assert.deepEqual(persisted.contacts, draft.contacts);
     assert.ok(publicPage.includes('Click me'));
     assert.equal(
       (await send('/api/admin/resume', 'PUT', initial, cookie)).status,

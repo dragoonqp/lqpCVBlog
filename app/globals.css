@@ -822,3 +822,32 @@ footer {
   white-space: nowrap;
   border: 0;
 }
+
+.language-switch {
+  display: inline-flex;
+  gap: 3px;
+  margin: 6px 0 8px;
+  padding: 3px;
+  border: 1px solid #dce5f3;
+  border-radius: 7px;
+  background: #f6f9fe;
+}
+.language-switch button {
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  background: transparent;
+  color: #657590;
+  cursor: pointer;
+}
+.language-switch button[aria-pressed='true'] {
+  color: #3568c5;
+  background: white;
+  box-shadow: 0 1px 4px #28456d14;
+}
+@media print {
+  .language-switch {
+    display: none;
+  }
+}

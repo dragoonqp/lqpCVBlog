@@ -189,3 +189,35 @@ test('Migration preserves edited data and password hashes and refuses nonempty d
     target.close();
   }
 });
+
+test('Consistent admin reads bypass a stale replica snapshot', async () => {
+  const client = createClient({ url: ':memory:' });
+  try {
+    const store = createRemoteStore(client);
+    const old = await store.readResume();
+    const batch = client.batch.bind(client);
+    const staleSnapshot = await batch(
+      [
+        'SELECT revision FROM metadata WHERE id=1',
+        'SELECT payload FROM work_experiences ORDER BY position',
+        'SELECT payload FROM technical_skills ORDER BY position',
+        'SELECT payload FROM contact_info WHERE id=1',
+      ],
+      'read',
+    );
+    const saved = await store.saveResume({
+      ...old,
+      contacts: { ...old.contacts, location: 'Latest location' },
+    });
+    client.batch = (statements, mode) =>
+      mode === 'read'
+        ? Promise.resolve(staleSnapshot)
+        : batch(statements, mode);
+    assert.equal((await store.readResume()).revision, old.revision);
+    const fresh = await store.readResume({ consistent: true });
+    assert.equal(fresh.revision, saved.revision);
+    assert.equal(fresh.contacts.location, 'Latest location');
+  } finally {
+    client.close();
+  }
+});

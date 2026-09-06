@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     await requireAdmin(request);
-    return json(await readResume());
+    return json(await readResume({ consistent: true }));
   } catch (error) {
     return failure(error);
   }

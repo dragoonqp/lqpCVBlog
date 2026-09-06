@@ -25,7 +25,9 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { translate } from '@/lib/resume-i18n.cjs';
+import { useRouter } from 'next/navigation';
 import { skillGroups } from '@/lib/resume-types';
 import type { ResumeData, Skill } from '@/lib/resume-types';
 import {
@@ -62,25 +64,69 @@ const articles = [
 function SkillTooltip({
   active,
   payload,
+  locale = 'en',
 }: {
+  locale?: 'en' | 'zh';
   active?: boolean;
   payload?: Array<{ payload: Skill }>;
 }) {
   if (!active || !payload?.[0]) return null;
   const skill = payload[0].payload;
+  const t = (text: string) => translate(text, locale);
   return (
     <div className="chart-tip">
       <strong>{skill.name}</strong>
       <span>
-        {skill.level}% mastery · {skill.years} yrs in production
+        {t('Mastery')}: {skill.level}% · {skill.years} {t('years')}
       </span>
-      <small>Impact radius {skill.impact}/10</small>
+      <small>
+        {t('impact')}: {skill.impact}/10
+      </small>
     </div>
   );
 }
 
 export default function ResumeView({ data }: { data: ResumeData }) {
   const { skills, roles, contacts } = data;
+  const [locale, setLocale] = useState<'en' | 'zh'>('en');
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('resume-language') === 'zh') setLocale('zh');
+    } catch {}
+  }, []);
+  useEffect(() => {
+    document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
+  }, [locale]);
+  const t = (text: string, override?: string) =>
+    translate(text, locale, override);
+  function chooseLanguage(value: 'en' | 'zh') {
+    setLocale(value);
+    try {
+      localStorage.setItem('resume-language', value);
+    } catch {}
+  }
+  const router = useRouter();
+  useEffect(() => {
+    const refresh = () => router.refresh();
+    const channel =
+      'BroadcastChannel' in window
+        ? new BroadcastChannel('resume-updates')
+        : null;
+    if (channel)
+      channel.onmessage = (event) => {
+        if (event.data === 'saved') refresh();
+      };
+    window.addEventListener('focus', refresh);
+    const onPageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) refresh();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    return () => {
+      channel?.close();
+      window.removeEventListener('focus', refresh);
+      window.removeEventListener('pageshow', onPageShow);
+    };
+  }, [router]);
   const [activeGroup, setActiveGroup] = useState<string>('All');
   const [chartOpen, setChartOpen] = useState(false);
   const visibleSkills = skills.filter(
@@ -95,8 +141,28 @@ export default function ResumeView({ data }: { data: ResumeData }) {
       <header className="resume-header">
         <div>
           <h1>Qiuping Long</h1>
+          <div
+            className="language-switch"
+            role="group"
+            aria-label="Language / 语言"
+          >
+            <button
+              type="button"
+              aria-pressed={locale === 'zh'}
+              onClick={() => chooseLanguage('zh')}
+            >
+              中文
+            </button>
+            <button
+              type="button"
+              aria-pressed={locale === 'en'}
+              onClick={() => chooseLanguage('en')}
+            >
+              English
+            </button>
+          </div>
           <p className="headline">
-            Senior Front-End Engineer · Full-Stack Delivery
+            {t('Senior Front-End Engineer · Full-Stack Delivery')}
           </p>
         </div>
         <address className="contact-info">
@@ -157,25 +223,28 @@ export default function ResumeView({ data }: { data: ResumeData }) {
               <span className="section-icon">
                 <Star size={16} />
               </span>
-              Profile
+              {t('Profile')}
             </h2>
             <ul className="strengths">
               <li>
-                7+ years delivering enterprise products across financial
-                services, manufacturing, telecom and government platforms.
+                {t(
+                  '7+ years delivering enterprise products across financial services, manufacturing, telecom and government platforms.',
+                )}
               </li>
               <li>
-                Front-end architecture with JavaScript, TypeScript, Vue and
-                React, supported by reusable components and resilient
-                engineering.
+                {t(
+                  'Front-end architecture with JavaScript, TypeScript, Vue and React, supported by reusable components and resilient engineering.',
+                )}
               </li>
               <li>
-                Full-stack delivery spanning Java Spring, SQL Server and
-                automated UAT deployments.
+                {t(
+                  'Full-stack delivery spanning Java Spring, SQL Server and automated UAT deployments.',
+                )}
               </li>
               <li>
-                Expressive data visualization with ECharts and Three.js,
-                bridging complex data and clear product experiences.
+                {t(
+                  'Expressive data visualization with ECharts and Three.js, bridging complex data and clear product experiences.',
+                )}
               </li>
             </ul>
           </section>
@@ -184,23 +253,23 @@ export default function ResumeView({ data }: { data: ResumeData }) {
               <span className="section-icon">
                 <Code2 size={17} />
               </span>
-              Technical Skills
+              {t('Technical Skills')}
             </h2>
             {skillGroups
               .filter((group) => skills.some((skill) => skill.group === group))
               .map((group) => (
                 <div
                   className={'skill-group skill-' + group.toLowerCase()}
-                  key={group}
+                  key={t(group)}
                 >
                   <h3>
                     {group === 'Frontend'
-                      ? 'Front-End Development'
+                      ? t('Front-End Development')
                       : group === 'Visual'
-                        ? 'Data Visualization'
+                        ? t('Data Visualization')
                         : group === 'Engineering'
-                          ? 'Engineering & Delivery'
-                          : 'Full-Stack Development'}
+                          ? t('Engineering & Delivery')
+                          : t('Full-Stack Development')}
                   </h3>
                   <div className="skill-tags">
                     {skills
@@ -217,7 +286,8 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                       setChartOpen(true);
                     }}
                   >
-                    Click me <ChartNoAxesCombined size={14} />
+                    {t('Click me')}
+                    <ChartNoAxesCombined size={14} />
                   </button>
                 </div>
               ))}
@@ -227,28 +297,28 @@ export default function ResumeView({ data }: { data: ResumeData }) {
               <span className="section-icon">
                 <ChartNoAxesCombined size={16} />
               </span>
-              Highlights
+              {t('Highlights')}
             </h2>
             <dl className="highlights">
               <div>
-                <dt>2024 performance rank</dt>
+                <dt>{t('2024 performance rank')}</dt>
                 <dd>
                   6 <span>/ 38</span>
                 </dd>
               </div>
               <div>
-                <dt>Critical defects</dt>
+                <dt>{t('Critical defects')}</dt>
                 <dd>0</dd>
               </div>
               <div>
-                <dt>HSBC platforms maintained full-stack</dt>
+                <dt>{t('HSBC platforms maintained full-stack')}</dt>
                 <dd>2</dd>
               </div>
             </dl>
             <p className="language">
-              <strong>Languages</strong>
+              <strong>{t('Languages')}</strong>
               <br />
-              English · CEFR C1
+              {t('English · CEFR C1')}
             </p>
           </section>
         </aside>
@@ -258,7 +328,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
               <span className="section-icon">
                 <BriefcaseBusiness size={16} />
               </span>
-              Work Experience
+              {t('Work Experience')}
             </h2>
             <div className="timeline">
               {roles.map((role) => (
@@ -267,16 +337,16 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                     <h3>{role.company}</h3>
                     <span className="role-date">{role.dates}</span>
                   </div>
-                  <h4>{role.role}</h4>
+                  <h4>{t(role.role, role.roleZh)}</h4>
                   <ul className="role-description">
-                    <li>{role.summary}</li>
+                    <li>{t(role.summary, role.summaryZh)}</li>
                   </ul>
                   <div className="tags">
                     {role.tags.map((tag) => (
                       <span key={tag}>{tag}</span>
                     ))}
                     {role.stat && (
-                      <span className="achievement">{role.stat}</span>
+                      <span className="achievement">{t(role.stat)}</span>
                     )}
                   </div>
                 </article>
@@ -292,29 +362,31 @@ export default function ResumeView({ data }: { data: ResumeData }) {
               <span className="section-icon">
                 <FileText size={16} />
               </span>
-              Engineering Notes
+              {t('Engineering Notes')}
             </h2>
             <div className="notes-list">
               {articles.map((article) => (
                 <article className="note" key={article.no}>
                   <div className="note-heading">
-                    <h3>{article.title}</h3>
-                    <span>{article.type}</span>
+                    <h3>{t(article.title)}</h3>
+                    <span>{t(article.type)}</span>
                   </div>
-                  <p>{article.blurb}</p>
+                  <p>{t(article.blurb)}</p>
                 </article>
               ))}
             </div>
           </section>
           <Dialog open={chartOpen} onOpenChange={setChartOpen}>
             <DialogContent className="skill-dialog">
-              <DialogTitle>Technology depth map</DialogTitle>
+              <DialogTitle>{t('Technology depth map')}</DialogTitle>
               <DialogDescription>
-                掌握程度 × 使用年限；气泡大小代表项目影响范围。
+                {t(
+                  'Mastery × years of experience; bubble size represents project impact.',
+                )}
               </DialogDescription>
               <div className="chart-card">
                 <div className="chart-head">
-                  <span>TECHNOLOGY DEPTH MAP</span>
+                  <span>{t('TECHNOLOGY DEPTH MAP')}</span>
                   <div
                     className="filters"
                     role="group"
@@ -335,7 +407,9 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                 <div className="chart-wrap">
                   {!visibleSkills.length ? (
                     <p className="empty-state">
-                      该分组尚未设置掌握程度和使用年限，可在管理页面补充。
+                      {t(
+                        'No mastery and experience data yet. Add these values in Admin.',
+                      )}
                     </p>
                   ) : (
                     <>
@@ -354,7 +428,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                             domain={[0, 100]}
                             tickCount={5}
                             unit="%"
-                            name="Mastery"
+                            name={t('Mastery')}
                             tickLine={false}
                             axisLine={false}
                           />
@@ -371,7 +445,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                               ) + 1,
                             ]}
                             unit="y"
-                            name="Experience"
+                            name={t('Experience')}
                             tickLine={false}
                             axisLine={false}
                           />
@@ -386,7 +460,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                             stroke="#17211b30"
                             strokeDasharray="4 5"
                             label={{
-                              value: 'CORE ZONE',
+                              value: t('CORE ZONE'),
                               position: 'insideTopRight',
                               fill: '#7d827d',
                               fontSize: 9,
@@ -394,7 +468,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                           />
                           <Tooltip
                             cursor={{ strokeDasharray: '3 3' }}
-                            content={<SkillTooltip />}
+                            content={<SkillTooltip locale={locale} />}
                           />
                           <Scatter data={[...visibleSkills]} shape="circle">
                             <LabelList
@@ -415,8 +489,8 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                     <div key={skill.id}>
                       <strong>{skill.name}</strong>
                       <span>
-                        {skill.level}% · {skill.years} years · impact{' '}
-                        {skill.impact}/10
+                        {skill.level}% · {skill.years} {t('years')} ·{' '}
+                        {t('impact')} {skill.impact}/10
                       </span>
                       <progress
                         aria-label={skill.name + ' mastery'}
@@ -427,8 +501,8 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                   ))}
                 </div>
                 <div className="axis-note">
-                  <span>← growing capability</span>
-                  <span>mastery →</span>
+                  <span>{t('← growing capability')}</span>
+                  <span>{t('mastery →')}</span>
                 </div>
               </div>
             </DialogContent>
@@ -438,9 +512,11 @@ export default function ResumeView({ data }: { data: ResumeData }) {
       <footer>
         <span>© 2026 Qiuping Long</span>
         {contacts.email && (
-          <a href={'mailto:' + contacts.email}>Let’s talk · {contacts.email}</a>
+          <a href={'mailto:' + contacts.email}>
+            {t('Let’s talk')} · {contacts.email}
+          </a>
         )}
-        <a href="/admin">Manage</a>
+        <a href="/admin">{t('Manage')}</a>
       </footer>
     </main>
   );

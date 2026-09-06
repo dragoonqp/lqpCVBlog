@@ -1,6 +1,7 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import type { Contacts, ResumeData, Role, Skill } from '@/lib/resume-types';
+import { saveWithRebase, DraftConflict } from '@/lib/save-resume.cjs';
 import { skillGroups } from '@/lib/resume-types';
 
 async function request(url: string, method: string, body: unknown) {
@@ -10,7 +11,10 @@ async function request(url: string, method: string, body: unknown) {
     body: JSON.stringify(body),
   });
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error || '操作失败，请重试');
+  if (!response.ok)
+    throw Object.assign(new Error(result.error || '操作失败，请重试'), {
+      status: response.status,
+    });
   return result;
 }
 const contactFields: {
@@ -59,6 +63,24 @@ export default function Admin({
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const submitting = useRef(false);
+  const [hasConflict, setHasConflict] = useState(false);
+  async function loadLatest(): Promise<ResumeData> {
+    const response = await fetch('/api/admin/resume', { cache: 'no-store' });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || '无法读取最新数据');
+    return result;
+  }
+  function downloadDraft() {
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+    );
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'resume-draft.json';
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
   const dirty = !!data && JSON.stringify(data) !== baseline;
   useEffect(() => {
     if (!dirty) return;
@@ -70,6 +92,8 @@ export default function Admin({
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
   async function action(fn: () => Promise<void>) {
+    if (submitting.current) return;
+    submitting.current = true;
     setBusy(true);
     setError('');
     setMessage('');
@@ -78,6 +102,7 @@ export default function Admin({
     } catch (e) {
       setError(e instanceof Error ? e.message : '操作失败');
     } finally {
+      submitting.current = false;
       setBusy(false);
     }
   }
@@ -303,14 +328,56 @@ export default function Admin({
           {message}
         </p>
       )}
+      {hasConflict && (
+        <div className="editor-card" role="status">
+          <p>当前输入仍保留在表单中。建议先下载草稿，再载入最新数据核对。</p>
+          <div className="row-actions">
+            <button type="button" disabled={busy} onClick={downloadDraft}>
+              下载当前草稿
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                void action(async () => {
+                  const latest = await loadLatest();
+                  setData(latest);
+                  setBaseline(JSON.stringify(latest));
+                  setHasConflict(false);
+                  setMessage('已载入最新数据，请结合备份草稿重新编辑。');
+                })
+              }
+            >
+              载入最新数据（替换当前草稿）
+            </button>
+          </div>
+        </div>
+      )}
       <form
         onSubmit={(event) => {
           event.preventDefault();
           void action(async () => {
-            const next = await request('/api/admin/resume', 'PUT', data);
+            let next: ResumeData;
+            try {
+              next = await saveWithRebase(
+                JSON.parse(baseline),
+                data,
+                (value) => request('/api/admin/resume', 'PUT', value),
+                loadLatest,
+              );
+            } catch (failure) {
+              if (failure instanceof DraftConflict) setHasConflict(true);
+              throw failure;
+            }
+            setHasConflict(false);
             setData(next);
             setBaseline(JSON.stringify(next));
             setMessage('已保存，简历页面刷新后即可查看。');
+            if ('BroadcastChannel' in window) {
+              const channel = new BroadcastChannel('resume-updates');
+              channel.postMessage('saved');
+              channel.close();
+            }
           });
         }}
       >
@@ -423,7 +490,28 @@ export default function Admin({
                         />
                       </label>
                       <label className="wide">
-                        技术标签（英文逗号分隔）
+                        中文职位（可选）
+                        <input
+                          maxLength={200}
+                          value={row.roleZh ?? ''}
+                          onChange={(e) =>
+                            updateRole(row.id, { roleZh: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label className="wide">
+                        中文经历描述（可选，中文模式优先显示；留空保留原文或内置翻译）
+                        <textarea
+                          rows={3}
+                          maxLength={10000}
+                          value={row.summaryZh ?? ''}
+                          onChange={(e) =>
+                            updateRole(row.id, { summaryZh: e.target.value })
+                          }
+                        />
+                      </label>
+                      <label className="wide">
+                        技术标签（英文逗号分隔，每个最多 200 个字符）
                         <input
                           value={row.tags.join(',')}
                           onChange={(e) =>

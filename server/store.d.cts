@@ -1,5 +1,7 @@
 import type { ResumeData } from '../lib/resume-types';
-export function readResume(): Promise<ResumeData>;
+export function readResume(options?: {
+  consistent?: boolean;
+}): Promise<ResumeData>;
 export function saveResume(input: unknown): Promise<ResumeData>;
 export function login(username: unknown, password: unknown): Promise<string>;
 export function sessionUser(token: string | undefined): Promise<string | null>;

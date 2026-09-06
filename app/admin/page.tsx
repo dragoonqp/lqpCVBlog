@@ -9,5 +9,7 @@ export const metadata = {
 };
 export default async function AdminPage() {
   const user = await sessionUser(cookies().get('resume_admin_session')?.value);
-  return <Admin initialData={user ? await readResume() : null} />;
+  return (
+    <Admin initialData={user ? await readResume({ consistent: true }) : null} />
+  );
 }

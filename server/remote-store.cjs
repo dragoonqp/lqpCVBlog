@@ -115,7 +115,7 @@ function createRemoteStore(client, options = {}) {
       });
     return initialization;
   }
-  async function readResume() {
+  async function readResume({ consistent = false } = {}) {
     const db = await ready();
     const results = await db.batch(
       [
@@ -124,7 +124,8 @@ function createRemoteStore(client, options = {}) {
         'SELECT payload FROM technical_skills ORDER BY position',
         'SELECT payload FROM contact_info WHERE id=1',
       ],
-      'read',
+      // Admin reads must reach the primary to avoid stale revision tokens.
+      consistent ? 'write' : 'read',
     );
     return {
       revision: Number(results[0].rows[0].revision),

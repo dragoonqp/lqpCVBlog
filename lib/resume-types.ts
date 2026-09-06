@@ -15,6 +15,8 @@ export type Skill = {
   fill: string;
 };
 export type Role = {
+  roleZh?: string;
+  summaryZh?: string;
   id: string;
   company: string;
   role: string;

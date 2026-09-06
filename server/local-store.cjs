@@ -143,12 +143,18 @@ function validateResume(input) {
     if (!Array.isArray(row.tags) || row.tags.length > 30)
       throw new InputError('每条经历最多 30 个标签');
     return {
+      ...(row.roleZh !== undefined
+        ? { roleZh: text(row.roleZh, '中文职位', 200, false) }
+        : {}),
+      ...(row.summaryZh !== undefined
+        ? { summaryZh: text(row.summaryZh, '中文经历描述', 10000, false) }
+        : {}),
       company: text(row.company, '公司'),
       role: text(row.role, '职位'),
       dates: text(row.dates, '日期'),
       summary: text(row.summary, '经历描述', 10000),
       stat: text(row.stat, '成果', 200, false),
-      tags: row.tags.map((tag) => text(tag, '标签', 80)),
+      tags: row.tags.map((tag) => text(tag, '标签', 200)),
     };
   });
   const skills = rows(data.skills, '技能', (row) => {
