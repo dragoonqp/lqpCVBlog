@@ -10,6 +10,7 @@ const {
 const { promisify } = require('node:util');
 const scrypt = promisify(scryptCallback);
 const seed = require('./seed.json');
+const defaultNotes = require('./notes-seed.json');
 let connection;
 function db() {
   if (process.env.VERCEL)
@@ -22,6 +23,7 @@ function db() {
   mkdirSync(path.dirname(filename), { recursive: true });
   connection = new DatabaseSync(filename);
   connection.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;
+    CREATE TABLE IF NOT EXISTS engineering_notes (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL CHECK(json_valid(payload)));
     CREATE TABLE IF NOT EXISTS metadata (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS work_experiences (id TEXT PRIMARY KEY, position INTEGER NOT NULL, payload TEXT NOT NULL CHECK(json_valid(payload)));
     CREATE TABLE IF NOT EXISTS technical_skills (id TEXT PRIMARY KEY, position INTEGER NOT NULL, payload TEXT NOT NULL CHECK(json_valid(payload)));
@@ -44,6 +46,7 @@ function db() {
   return connection;
 }
 function writeRows(database, data) {
+  database.prepare('INSERT INTO engineering_notes VALUES(1, ?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload').run(JSON.stringify(data.notes ?? defaultNotes));
   database.prepare('DELETE FROM work_experiences').run();
   database.prepare('DELETE FROM technical_skills').run();
   const roleInsert = database.prepare(
@@ -80,6 +83,7 @@ function readResume() {
         .prepare('SELECT payload FROM technical_skills ORDER BY position')
         .all()
         .map((row) => JSON.parse(row.payload)),
+      notes: JSON.parse(database.prepare('SELECT payload FROM engineering_notes WHERE id=1').get()?.payload ?? JSON.stringify(defaultNotes)),
       contacts: JSON.parse(
         database.prepare('SELECT payload FROM contact_info WHERE id=1').get()
           .payload,
@@ -208,7 +212,13 @@ function validateResume(input) {
     )
       throw new InputError(`${key} 请填写该平台的 HTTPS 链接`);
   }
-  return { revision: data.revision, roles, skills, contacts };
+  const notes = data.notes === undefined ? undefined : rows(data.notes, '工程笔记', row => ({
+    type: text(row.type, '笔记分类', 100),
+    title: text(row.title, '笔记标题', 200),
+    blurb: text(row.blurb, '笔记内容', 10000, true, true),
+    ...Object.fromEntries(['typeZh', 'titleZh', 'blurbZh'].filter(key => row[key] !== undefined).map(key => [key, text(row[key], '中文笔记', key === 'blurbZh' ? 10000 : key === 'typeZh' ? 100 : 200, false, key === 'blurbZh')])),
+  }));
+  return { revision: data.revision, roles, skills, contacts, ...(notes === undefined ? {} : { notes }) };
 }
 function saveResume(input) {
   const data = validateResume(input);
@@ -229,6 +239,7 @@ function saveResume(input) {
         .prepare('SELECT payload FROM technical_skills ORDER BY position')
         .all()
         .map((row) => JSON.parse(row.payload)),
+      notes: JSON.parse(database.prepare('SELECT payload FROM engineering_notes WHERE id=1').get()?.payload ?? JSON.stringify(defaultNotes)),
       contacts: JSON.parse(
         database.prepare('SELECT payload FROM contact_info WHERE id=1').get()
           .payload,

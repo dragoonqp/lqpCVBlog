@@ -2,7 +2,7 @@
 import { useEffect, useState, useRef } from 'react';
 import type { Contacts, ResumeData, Role, Skill } from '@/lib/resume-types';
 import { saveWithRebase, DraftConflict } from '@/lib/save-resume.cjs';
-import { Toaster, toast } from '@/components/ui/toast';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { skillGroups } from '@/lib/resume-types';
 
 async function request(url: string, method: string, body: unknown) {
@@ -51,20 +51,18 @@ const contactFields: {
     type: 'url',
   },
 ];
-export default function Admin(props: { initialData: ResumeData | null }) {
-  return <Toaster timeout={4500}><AdminEditor {...props} /></Toaster>;
-}
-
-function AdminEditor({
+export default function Admin({
   initialData,
 }: {
   initialData: ResumeData | null;
 }) {
   const [data, setData] = useState(initialData);
   const [baseline, setBaseline] = useState(JSON.stringify(initialData));
-  const [tab, setTab] = useState<'roles' | 'skills' | 'contacts' | 'account'>(
+  const [tab, setTab] = useState<'roles' | 'skills' | 'notes' | 'contacts' | 'account'>(
     'roles',
   );
+  const [savedPopup, setSavedPopup] = useState(false);
+  const [noteLocale, setNoteLocale] = useState<'en' | 'zh'>('en');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -131,7 +129,7 @@ function AdminEditor({
           ),
         },
     );
-  function move(kind: 'roles' | 'skills', index: number, direction: number) {
+  function move(kind: 'roles' | 'skills' | 'notes', index: number, direction: number) {
     if (!data) return;
     const rows = [...data[kind]];
     [rows[index], rows[index + direction]] = [
@@ -140,7 +138,7 @@ function AdminEditor({
     ];
     setData({ ...data, [kind]: rows });
   }
-  function rowActions(kind: 'roles' | 'skills', index: number, name: string) {
+  function rowActions(kind: 'roles' | 'skills' | 'notes', index: number, name: string) {
     return (
       <div className="row-actions">
         <button
@@ -244,6 +242,13 @@ function AdminEditor({
     );
   return (
     <main className="admin-shell">
+      <Dialog open={savedPopup} onOpenChange={setSavedPopup}>
+        <DialogContent className="save-success-dialog" showCloseButton={false}>
+          <DialogTitle>保存成功</DialogTitle>
+          <DialogDescription>简历内容已保存并更新。</DialogDescription>
+          <DialogClose className="primary">知道了</DialogClose>
+        </DialogContent>
+      </Dialog>
       <header className="admin-header">
         <div>
           <span className="admin-eyebrow">RESUME ADMIN</span>
@@ -302,6 +307,7 @@ function AdminEditor({
           [
             ['roles', '工作经历'],
             ['skills', 'Technical Skills'],
+            ['notes', '工程笔记'],
             ['contacts', '联系信息'],
             ['account', '账号安全'],
           ] as const
@@ -381,7 +387,7 @@ function AdminEditor({
             setHasConflict(false);
             setData(next);
             setBaseline(JSON.stringify(next));
-            toast.add({ title: '保存成功', description: '简历内容已更新。', type: 'success' });
+            setSavedPopup(true);
             if ('BroadcastChannel' in window) {
               const channel = new BroadcastChannel('resume-updates');
               channel.postMessage('saved');
@@ -672,6 +678,31 @@ function AdminEditor({
                           }
                         />
                       </label>
+                    </div>
+                  </article>
+                ))}
+              </>
+            )}
+            {tab === 'notes' && (
+              <>
+                <div className="panel-heading"><div><h2>工程笔记</h2><p>支持添加、排序及删除；中文留空时使用英文内容。</p></div>
+                  <button type="button" onClick={() => setData({ ...data, notes: [...data.notes, { id: crypto.randomUUID(), type: '', title: '', blurb: '' }] })}>＋ 添加笔记</button>
+                </div>
+                <div className="admin-header-actions" role="group" aria-label="笔记编辑语言">
+                  <button type="button" aria-pressed={noteLocale === 'en'} onClick={() => setNoteLocale('en')}>English</button>
+                  <button type="button" aria-pressed={noteLocale === 'zh'} onClick={() => setNoteLocale('zh')}>中文</button>
+                </div>
+                {!data.notes.length && <p className="empty-state">还没有工程笔记，点击“添加笔记”开始。</p>}
+                {data.notes.map((note, i) => (
+                  <article className="editor-card" key={note.id}>
+                    <div className="editor-card-heading"><h3>{i + 1} · {(noteLocale === 'zh' ? note.titleZh || note.title : note.title) || '新笔记'}</h3>{rowActions('notes', i, note.title)}</div>
+                    <div className="form-grid">
+                      {(['type', 'title', 'blurb'] as const).map(field => {
+                        const key = noteLocale === 'zh' ? (field + 'Zh') as 'typeZh' | 'titleZh' | 'blurbZh' : field;
+                        const label = { type: '分类', title: '标题', blurb: '内容' }[field];
+                        const props = { value: note[key] ?? '', maxLength: field === 'blurb' ? 10000 : field === 'type' ? 100 : 200, onChange: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setData({ ...data, notes: data.notes.map(row => row.id === note.id ? { ...row, [key]: event.target.value } : row) }) };
+                        return <label key={key}>{noteLocale === 'zh' ? '中文' : '英文'}{label}{field === 'blurb' ? <textarea rows={6} {...props} /> : <input {...props} />}</label>;
+                      })}
                     </div>
                   </article>
                 ))}

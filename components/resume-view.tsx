@@ -37,29 +37,6 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 
-const articles = [
-  {
-    no: '01',
-    type: 'Architecture',
-    title: 'Making organizational data feel simple',
-    blurb:
-      'A field guide to component boundaries and calculation utilities for deeply nested enterprise hierarchies.',
-  },
-  {
-    no: '02',
-    type: 'Visualization',
-    title: 'From dashboard to spatial story',
-    blurb:
-      'What changed when a Three.js globe became a real navigation surface instead of decoration.',
-  },
-  {
-    no: '03',
-    type: 'Engineering',
-    title: 'Reliable releases are a product feature',
-    blurb:
-      'Practical notes on UAT automation, production incident rotation and keeping delivery calm.',
-  },
-];
 
 function SkillTooltip({
   active,
@@ -87,7 +64,7 @@ function SkillTooltip({
 }
 
 export default function ResumeView({ data }: { data: ResumeData }) {
-  const { skills, roles, contacts } = data;
+  const { skills, roles, contacts, notes } = data;
   const [locale, setLocale] = useState<'en' | 'zh'>('en');
   useEffect(() => {
     try {
@@ -365,13 +342,13 @@ export default function ResumeView({ data }: { data: ResumeData }) {
               {t('Engineering Notes')}
             </h2>
             <div className="notes-list">
-              {articles.map((article) => (
-                <article className="note" key={article.no}>
+              {notes.map((article) => (
+                <article className="note" key={article.id}>
                   <div className="note-heading">
-                    <h3>{t(article.title)}</h3>
-                    <span>{t(article.type)}</span>
+                    <h3>{t(article.title, article.titleZh)}</h3>
+                    <span>{t(article.type, article.typeZh)}</span>
                   </div>
-                  <p>{t(article.blurb)}</p>
+                  <p>{t(article.blurb, article.blurbZh)}</p>
                 </article>
               ))}
             </div>

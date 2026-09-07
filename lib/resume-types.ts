@@ -33,7 +33,12 @@ export type Contacts = {
   whatsapp: string;
   telegram: string;
 };
+export type EngineeringNote = {
+  id: string; type: string; title: string; blurb: string;
+  typeZh?: string; titleZh?: string; blurbZh?: string;
+};
 export type ResumeData = {
+  notes: EngineeringNote[];
   revision: number;
   roles: Role[];
   skills: Skill[];

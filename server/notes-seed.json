@@ -1,0 +1,29 @@
+[
+  {
+    "id": "note-01",
+    "type": "Architecture",
+    "title": "Making organizational data feel simple",
+    "blurb": "A field guide to component boundaries and calculation utilities for deeply nested enterprise hierarchies.",
+    "typeZh": "架构",
+    "titleZh": "让组织数据更易理解",
+    "blurbZh": "针对多层级企业组织结构，梳理组件边界和计算工具的设计方法。"
+  },
+  {
+    "id": "note-02",
+    "type": "Visualization",
+    "title": "From dashboard to spatial story",
+    "blurb": "What changed when a Three.js globe became a real navigation surface instead of decoration.",
+    "typeZh": "可视化",
+    "titleZh": "从数据看板到空间叙事",
+    "blurbZh": "探讨将 Three.js 地球从装饰元素转化为实际导航界面带来的变化。"
+  },
+  {
+    "id": "note-03",
+    "type": "Engineering",
+    "title": "Reliable releases are a product feature",
+    "blurb": "Practical notes on UAT automation, production incident rotation and keeping delivery calm.",
+    "typeZh": "工程交付",
+    "titleZh": "可靠发布也是产品能力",
+    "blurbZh": "关于 UAT 自动化、生产事件轮值与稳定交付的实践笔记。"
+  }
+]

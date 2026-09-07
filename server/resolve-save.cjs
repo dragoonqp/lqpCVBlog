@@ -11,12 +11,15 @@ function canonical(value) {
   return value;
 }
 function sameContent(a, b) {
-  return ['roles', 'skills', 'contacts'].every(
+  return ['roles', 'skills', 'contacts', 'notes'].every(
     (key) =>
       JSON.stringify(canonical(a[key])) === JSON.stringify(canonical(b[key])),
   );
 }
 function resolveSave(data, baseline, current, InputError) {
+  // Older open admin pages must not erase newly managed notes.
+  if (data.notes === undefined) data = { ...data, notes: current.notes };
+  if (baseline && baseline.notes === undefined) baseline = { ...baseline, notes: current.notes };
   if (sameContent(data, current)) return current;
   if (data.revision === current.revision) return data;
   if (baseline && baseline.revision === data.revision) {

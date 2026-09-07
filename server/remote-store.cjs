@@ -8,7 +8,9 @@ const {
   verifyPassword,
 } = require('./local-store.cjs');
 const seed = require('./seed.json');
+const defaultNotes = require('./notes-seed.json');
 const schema = [
+  'CREATE TABLE IF NOT EXISTS engineering_notes (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL CHECK(json_valid(payload)))',
   'CREATE TABLE IF NOT EXISTS metadata (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS work_experiences (id TEXT PRIMARY KEY, position INTEGER NOT NULL, payload TEXT NOT NULL CHECK(json_valid(payload)))',
   'CREATE TABLE IF NOT EXISTS technical_skills (id TEXT PRIMARY KEY, position INTEGER NOT NULL, payload TEXT NOT NULL CHECK(json_valid(payload)))',
@@ -47,6 +49,7 @@ function openClient() {
 }
 function writeStatements(data) {
   return [
+    { sql: 'INSERT INTO engineering_notes VALUES(1, ?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload', args: [JSON.stringify(data.notes ?? defaultNotes)] },
     'DELETE FROM work_experiences',
     'DELETE FROM technical_skills',
     ...data.roles.map((row, index) => ({
@@ -129,6 +132,7 @@ function createRemoteStore(client, options = {}) {
         'SELECT payload FROM work_experiences ORDER BY position',
         'SELECT payload FROM technical_skills ORDER BY position',
         'SELECT payload FROM contact_info WHERE id=1',
+        'SELECT payload FROM engineering_notes WHERE id=1',
       ],
       // Admin reads must reach the primary to avoid stale revision tokens.
       consistent ? 'write' : 'read',
@@ -138,6 +142,7 @@ function createRemoteStore(client, options = {}) {
       roles: results[1].rows.map((row) => JSON.parse(row.payload)),
       skills: results[2].rows.map((row) => JSON.parse(row.payload)),
       contacts: JSON.parse(results[3].rows[0].payload),
+      notes: JSON.parse(results[4].rows[0]?.payload ?? JSON.stringify(defaultNotes)),
     };
   }
   async function saveResume(input) {
@@ -151,12 +156,14 @@ function createRemoteStore(client, options = {}) {
         'SELECT payload FROM work_experiences ORDER BY position',
         'SELECT payload FROM technical_skills ORDER BY position',
         'SELECT payload FROM contact_info WHERE id=1',
+        'SELECT payload FROM engineering_notes WHERE id=1',
       ]);
       const current = {
         revision: Number(rows[0].rows[0].revision),
         roles: rows[1].rows.map((row) => JSON.parse(row.payload)),
         skills: rows[2].rows.map((row) => JSON.parse(row.payload)),
         contacts: JSON.parse(rows[3].rows[0].payload),
+        notes: JSON.parse(rows[4].rows[0]?.payload ?? JSON.stringify(defaultNotes)),
       };
       const merged = resolveSave(data, baseline, current, InputError);
       if (sameContent(merged, current)) return current;

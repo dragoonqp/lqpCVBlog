@@ -865,3 +865,13 @@ footer {
 }
 [data-slot="toast-icon"] { color: #238450; }
 [data-slot="toast-description"] { color: var(--muted); }
+
+.save-success-dialog[data-slot="dialog-content"] {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); translate: none; z-index: 100;
+  width: min(400px, calc(100vw - 32px)); padding: 28px; border-radius: 16px;
+  background: white; color: var(--ink); box-shadow: 0 24px 80px #20314c40; display: grid; gap: 18px;
+}
+.save-success-dialog h2 { margin: 0; color: #238450; }
+.save-success-dialog p { margin: 0; color: var(--muted); }
+.save-success-dialog button { border: 0; border-radius: 8px; padding: 12px 20px; background: var(--blue); color: white; cursor: pointer; }
+.note p { white-space: pre-wrap; overflow-wrap: anywhere; }

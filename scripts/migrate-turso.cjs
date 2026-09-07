@@ -15,6 +15,9 @@ async function migrateLocal(source, target) {
     data = validateResume({
       revision: source.prepare('SELECT revision FROM metadata WHERE id=1').get()
         .revision,
+      notes: source.prepare("SELECT name FROM sqlite_schema WHERE type='table' AND name='engineering_notes'").get()
+        ? JSON.parse(source.prepare('SELECT payload FROM engineering_notes WHERE id=1').get()?.payload ?? JSON.stringify(require('../server/notes-seed.json')))
+        : require('../server/notes-seed.json'),
       roles: source
         .prepare('SELECT payload FROM work_experiences ORDER BY position')
         .all()
@@ -41,6 +44,7 @@ async function migrateLocal(source, target) {
       'SELECT ' +
         [
           'metadata',
+          'engineering_notes',
           'work_experiences',
           'technical_skills',
           'contact_info',

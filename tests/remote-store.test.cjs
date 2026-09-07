@@ -202,6 +202,7 @@ test('Consistent admin reads bypass a stale replica snapshot', async () => {
         'SELECT payload FROM work_experiences ORDER BY position',
         'SELECT payload FROM technical_skills ORDER BY position',
         'SELECT payload FROM contact_info WHERE id=1',
+        'SELECT payload FROM engineering_notes WHERE id=1',
       ],
       'read',
     );
