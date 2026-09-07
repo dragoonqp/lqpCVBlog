@@ -19,11 +19,13 @@ async function request(url: string, method: string, body: unknown) {
   return result;
 }
 const contactFields: {
-  key: keyof Contacts;
+  key: Exclude<keyof Contacts, 'languages'>;
   label: string;
   placeholder: string;
   type?: string;
 }[] = [
+  { key: 'name', label: '姓名 / English name', placeholder: 'Qiuping Long' },
+  { key: 'nameZh', label: '中文姓名（可选）', placeholder: '留空时使用上方姓名' },
   { key: 'phone', label: '电话', placeholder: '+86 186 2044 5753' },
   {
     key: 'email',
@@ -308,7 +310,7 @@ export default function Admin({
             ['roles', '工作经历'],
             ['skills', 'Technical Skills'],
             ['notes', '工程笔记'],
-            ['contacts', '联系信息'],
+            ['contacts', '基本信息'],
             ['account', '账号安全'],
           ] as const
         ).map(([key, title]) => (
@@ -712,9 +714,9 @@ export default function Admin({
               <>
                 <div className="panel-heading">
                   <div>
-                    <h2>联系信息</h2>
+                    <h2>基本信息</h2>
                     <p>
-                      右上角显示已填写的项目；留空则隐藏。社交账号填写完整 HTTPS
+                      姓名显示在页首和页脚；联系方式留空则隐藏。社交账号填写完整 HTTPS
                       链接。
                     </p>
                   </div>
@@ -725,9 +727,10 @@ export default function Admin({
                       {field.label}
                       <input
                         type={field.type || 'text'}
-                        maxLength={300}
+                        required={field.key === 'name'}
+                        maxLength={field.key === 'name' || field.key === 'nameZh' ? 100 : 300}
                         placeholder={field.placeholder}
-                        value={data.contacts[field.key]}
+                        value={data.contacts[field.key] ?? (field.key === 'name' ? 'Qiuping Long' : '')}
                         onChange={(e) =>
                           setData({
                             ...data,
@@ -743,6 +746,13 @@ export default function Admin({
                 </div>
               </>
             )}
+            {tab === 'contacts' && <div>
+              <div className="panel-heading"><div><h2>工作语言</h2><p>填写能用于工作的语言及熟练程度，中文字段可选。保存后显示在姓名下方。</p></div><button type="button" disabled={(data.contacts.languages?.length ?? 0) >= 20} onClick={() => setData({ ...data, contacts: { ...data.contacts, languages: [...(data.contacts.languages ?? []), { id: crypto.randomUUID(), name: '' }] } })}>＋ 添加语言</button></div>
+              {(data.contacts.languages ?? []).map((language, index) => <article className="editor-card" key={language.id}>
+                <div className="editor-card-heading"><h3>{index + 1} · {language.name || '新语言'}</h3><button type="button" className="danger" onClick={() => setData({ ...data, contacts: { ...data.contacts, languages: data.contacts.languages?.filter(row => row.id !== language.id) } })}>删除</button></div>
+                <div className="form-grid">{([['name', '语言 / Language', 'English'], ['nameZh', '中文名称（可选）', '英语'], ['proficiency', '熟练程度（可选）', 'Professional working proficiency'], ['proficiencyZh', '中文熟练程度（可选）', '可作为工作语言']] as const).map(([key, label, placeholder]) => <label key={key}>{label}<input required={key === 'name'} maxLength={100} placeholder={placeholder} value={language[key] ?? ''} onChange={e => setData({ ...data, contacts: { ...data.contacts, languages: data.contacts.languages?.map(row => row.id === language.id ? { ...row, [key]: e.target.value } : row) } })} /></label>)}</div>
+              </article>)}
+            </div>}
             {tab === 'account' && (
               <>
                 <h2>账号安全</h2>

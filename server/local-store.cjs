@@ -184,6 +184,17 @@ function validateResume(input) {
       (key) => [key, text(c[key], key, 300, false)],
     ),
   );
+  if (c.languages !== undefined) {
+    if (!Array.isArray(c.languages) || c.languages.length > 20) throw new InputError('工作语言最多 20 项');
+    contacts.languages = rows(c.languages, '工作语言', row => ({
+      name: text(row.name, '语言名称', 100),
+      nameZh: text(row.nameZh ?? '', '中文语言名称', 100, false),
+      proficiency: text(row.proficiency ?? '', '熟练程度', 100, false),
+      proficiencyZh: text(row.proficiencyZh ?? '', '中文熟练程度', 100, false),
+    }));
+  }
+  if (c.name !== undefined) contacts.name = text(c.name, '姓名', 100);
+  if (c.nameZh !== undefined) contacts.nameZh = text(c.nameZh, '中文姓名', 100, false);
   if (contacts.phone && !/^\+?[\d ()-]{5,40}$/.test(contacts.phone))
     throw new InputError('电话格式不正确');
   if (

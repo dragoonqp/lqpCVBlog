@@ -875,3 +875,7 @@ footer {
 .save-success-dialog p { margin: 0; color: var(--muted); }
 .save-success-dialog button { border: 0; border-radius: 8px; padding: 12px 20px; background: var(--blue); color: white; cursor: pointer; }
 .note p { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.work-languages { margin-top: 16px; color: var(--muted); font-size: 13px; }
+.work-languages ul { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 8px 0 0; list-style: none; }
+.work-languages li { border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px; overflow-wrap: anywhere; }

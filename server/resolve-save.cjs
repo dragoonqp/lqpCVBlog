@@ -17,6 +17,12 @@ function sameContent(a, b) {
   );
 }
 function resolveSave(data, baseline, current, InputError) {
+  for (const key of ['name', 'nameZh', 'languages']) {
+    if (data.contacts[key] === undefined && current.contacts[key] !== undefined) {
+      data = { ...data, contacts: { ...data.contacts, [key]: current.contacts[key] } };
+      if (baseline) baseline = { ...baseline, contacts: { ...baseline.contacts, [key]: current.contacts[key] } };
+    }
+  }
   // Older open admin pages must not erase newly managed notes.
   if (data.notes === undefined) data = { ...data, notes: current.notes };
   if (baseline && baseline.notes === undefined) baseline = { ...baseline, notes: current.notes };

@@ -25,7 +25,11 @@ export type Role = {
   tags: string[];
   stat: string;
 };
+export type WorkLanguage = { id: string; name: string; nameZh?: string; proficiency?: string; proficiencyZh?: string };
 export type Contacts = {
+  languages?: WorkLanguage[];
+  name?: string;
+  nameZh?: string;
   phone: string;
   email: string;
   location: string;

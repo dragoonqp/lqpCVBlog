@@ -117,7 +117,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
     <main className="resume" id="top">
       <header className="resume-header">
         <div>
-          <h1>Qiuping Long</h1>
+          <h1>{t(contacts.name || 'Qiuping Long', contacts.nameZh)}</h1>
           <div
             className="language-switch"
             role="group"
@@ -141,6 +141,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
           <p className="headline">
             {t('Senior Front-End Engineer · Full-Stack Delivery')}
           </p>
+          {!!contacts.languages?.length && <div className="work-languages"><strong>{locale === 'zh' ? '工作语言' : 'Working languages'}</strong><ul>{contacts.languages.map(language => <li key={language.id}>{t(language.name, language.nameZh)}{(language.proficiency || (locale === 'zh' && language.proficiencyZh)) && <> · {t(language.proficiency || '', language.proficiencyZh)}</>}</li>)}</ul></div>}
         </div>
         <address className="contact-info">
           {contacts.phone && (
@@ -487,7 +488,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
         </div>
       </div>
       <footer>
-        <span>© 2026 Qiuping Long</span>
+        <span>© 2026 {t(contacts.name || 'Qiuping Long', contacts.nameZh)}</span>
         {contacts.email && (
           <a href={'mailto:' + contacts.email}>
             {t('Let’s talk')} · {contacts.email}
