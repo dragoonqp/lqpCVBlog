@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { Phone, Mail, MapPin, Link, MessageCircle, Send } from 'lucide-react';
 import type { Contacts } from '@/lib/resume-types';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 export default function ContactViewer({ locale }: { locale: 'zh' | 'en' }) {
@@ -18,10 +19,10 @@ export default function ContactViewer({ locale }: { locale: 'zh' | 'en' }) {
   }, []);
   return <div className="contact-access-view">
     {contacts ? <address className="contact-info">
-      {contacts.phone && <a href={'tel:' + contacts.phone.replace(/[^+0-9]/g, '')}>{contacts.phone}</a>}
-      {contacts.email && <a href={'mailto:' + contacts.email}>{contacts.email}</a>}
-      {contacts.location && <span>{contacts.location}</span>}
-      {(['linkedin', 'whatsapp', 'telegram'] as const).map(key => contacts[key] && <a key={key} href={contacts[key]} target="_blank" rel="noopener noreferrer">{{linkedin: 'LinkedIn', whatsapp: 'WhatsApp', telegram: 'Telegram'}[key]} ↗</a>)}
+      {contacts.phone && <a href={'tel:' + contacts.phone.replace(/[^+0-9]/g, '')}><Phone size={15} aria-hidden="true" />{contacts.phone}</a>}
+      {contacts.email && <a href={'mailto:' + contacts.email}><Mail size={15} aria-hidden="true" />{contacts.email}</a>}
+      {contacts.location && <span><MapPin size={15} aria-hidden="true" />{contacts.location}</span>}
+      {(['linkedin', 'whatsapp', 'telegram'] as const).map(key => contacts[key] && <a key={key} href={contacts[key]} target="_blank" rel="noopener noreferrer">{key === 'linkedin' ? <Link size={15} aria-hidden="true" /> : key === 'whatsapp' ? <MessageCircle size={15} aria-hidden="true" /> : <Send size={15} aria-hidden="true" />}{{linkedin: 'LinkedIn', whatsapp: 'WhatsApp', telegram: 'Telegram'}[key]} ↗</a>)}
       {!['phone', 'email', 'location', 'linkedin', 'whatsapp', 'telegram'].some(key => contacts[key as keyof Contacts]) && <span>{zh ? '暂无联系方式' : 'No contact details available'}</span>}
     </address> : <button className="contact-unlock" onClick={() => { setError(''); setOpen(true); }}>{zh ? '查看联系方式' : 'View contact details'}</button>}
     <Dialog open={open} onOpenChange={setOpen}><DialogContent className="save-success-dialog" showCloseButton={false}>
