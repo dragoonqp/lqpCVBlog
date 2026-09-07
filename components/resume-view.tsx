@@ -28,6 +28,7 @@ import {
 import { useState, useEffect } from 'react';
 import { translate } from '@/lib/resume-i18n.cjs';
 import { useRouter } from 'next/navigation';
+import ContactViewer from '@/components/contact-viewer';
 import { skillGroups } from '@/lib/resume-types';
 import type { ResumeData, Skill } from '@/lib/resume-types';
 import {
@@ -143,56 +144,7 @@ export default function ResumeView({ data }: { data: ResumeData }) {
           </p>
           {!!contacts.languages?.length && <div className="work-languages"><strong>{locale === 'zh' ? '工作语言' : 'Working languages'}</strong><ul>{contacts.languages.map(language => <li key={language.id}>{t(language.name, language.nameZh)}{(language.proficiency || (locale === 'zh' && language.proficiencyZh)) && <> · {t(language.proficiency || '', language.proficiencyZh)}</>}</li>)}</ul></div>}
         </div>
-        <address className="contact-info">
-          {contacts.phone && (
-            <a href={'tel:' + contacts.phone.replace(/[^+0-9]/g, '')}>
-              <Phone size={15} />
-              {contacts.phone}
-            </a>
-          )}
-          {contacts.email && (
-            <a href={'mailto:' + contacts.email}>
-              <Mail size={15} />
-              {contacts.email}
-            </a>
-          )}
-          {contacts.location && (
-            <span>
-              <MapPin size={15} />
-              {contacts.location}
-            </span>
-          )}
-          {contacts.linkedin && (
-            <a
-              href={contacts.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Link size={15} />
-              LinkedIn
-            </a>
-          )}
-          {contacts.whatsapp && (
-            <a
-              href={contacts.whatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <MessageCircle size={15} />
-              WhatsApp
-            </a>
-          )}
-          {contacts.telegram && (
-            <a
-              href={contacts.telegram}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Send size={15} />
-              Telegram
-            </a>
-          )}
-        </address>
+        <ContactViewer locale={locale} />
       </header>
       <div className="resume-columns">
         <aside className="sidebar">

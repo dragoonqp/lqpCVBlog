@@ -43,6 +43,9 @@ async function migrateLocal(source, target) {
     const occupied = await tx.execute(
       'SELECT ' +
         [
+          'contact_codes',
+          'contact_grants',
+          'contact_attempts',
           'metadata',
           'engineering_notes',
           'work_experiences',

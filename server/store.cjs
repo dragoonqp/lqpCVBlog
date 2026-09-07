@@ -21,6 +21,7 @@ module.exports = {
   db: local.db,
 };
 for (const name of [
+  'listContactCodes', 'createContactCode', 'revokeContactCode', 'contactAccess', 'redeemContactCode',
   'readResume',
   'saveResume',
   'createAdmin',

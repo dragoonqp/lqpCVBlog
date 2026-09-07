@@ -1,3 +1,4 @@
+const { schema: contactSchema, createContactAccess } = require('./contact-access.cjs');
 const { resolveSave, sameContent } = require('./resolve-save.cjs');
 const { createClient } = require('@libsql/client/web');
 const { randomBytes, createHash } = require('node:crypto');
@@ -10,6 +11,7 @@ const {
 const seed = require('./seed.json');
 const defaultNotes = require('./notes-seed.json');
 const schema = [
+  ...contactSchema,
   'CREATE TABLE IF NOT EXISTS engineering_notes (id INTEGER PRIMARY KEY CHECK(id=1), payload TEXT NOT NULL CHECK(json_valid(payload)))',
   'CREATE TABLE IF NOT EXISTS metadata (id INTEGER PRIMARY KEY CHECK(id=1), revision INTEGER NOT NULL)',
   'CREATE TABLE IF NOT EXISTS work_experiences (id TEXT PRIMARY KEY, position INTEGER NOT NULL, payload TEXT NOT NULL CHECK(json_valid(payload)))',
@@ -290,6 +292,7 @@ function createRemoteStore(client, options = {}) {
     });
   }
   return {
+    ...createContactAccess(async statements => (await ready()).batch(statements, 'write'), InputError),
     readResume,
     saveResume,
     sessionUser,

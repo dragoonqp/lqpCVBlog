@@ -1,3 +1,4 @@
+const { schema: contactSchema, createContactAccess } = require('./contact-access.cjs');
 const { resolveSave, sameContent } = require('./resolve-save.cjs');
 const { mkdirSync } = require('node:fs');
 const path = require('node:path');
@@ -32,6 +33,7 @@ function db() {
     CREATE TABLE IF NOT EXISTS sessions (token_hash TEXT PRIMARY KEY, username TEXT NOT NULL REFERENCES admins(username) ON DELETE CASCADE, expires_at INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS login_attempts (key TEXT PRIMARY KEY, attempts INTEGER NOT NULL, resets_at INTEGER NOT NULL);
     CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);`);
+  connection.exec(contactSchema.join(';'));
   connection.exec('BEGIN IMMEDIATE');
   try {
     if (!connection.prepare('SELECT id FROM metadata WHERE id=1').get()) {
@@ -372,7 +374,22 @@ async function changePassword(token, current, next) {
     throw error;
   }
 }
+const contactAccessStore = createContactAccess(statements => {
+  const database = db();
+  database.exec('BEGIN IMMEDIATE');
+  try {
+    const results = statements.map(statement => {
+      const sql = typeof statement === 'string' ? statement : statement.sql;
+      const args = typeof statement === 'string' ? [] : statement.args ?? [];
+      const prepared = database.prepare(sql);
+      if (/^SELECT|RETURNING/i.test(sql) || /RETURNING/i.test(sql)) return { rows: prepared.all(...args) };
+      const result = prepared.run(...args); return { rows: [], rowsAffected: result.changes };
+    });
+    database.exec('COMMIT'); return results;
+  } catch (error) { database.exec('ROLLBACK'); throw error; }
+}, InputError);
 module.exports = {
+  ...contactAccessStore,
   db,
   readResume,
   validateResume,

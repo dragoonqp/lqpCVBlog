@@ -1,0 +1,42 @@
+for (const key of ['VERCEL', 'TURSO_DATABASE_URL', 'TURSO_AUTH_TOKEN', 'RESUME_ADMIN_PASSWORD']) process.env[key] = '';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createClient } = require('@libsql/client');
+const { createRemoteStore } = require('../server/remote-store.cjs');
+const { publicResume } = require('../server/contact-access.cjs');
+const { mkdtempSync, rmSync } = require('node:fs');
+const { tmpdir } = require('node:os');
+const path = require('node:path');
+for (const backend of ['local', 'remote']) test(`${backend}: contact codes are hashed, bounded, revocable and expire`, async () => {
+  const folder = mkdtempSync(path.join(tmpdir(), 'contact-code-test-'));
+  process.env.RESUME_DB_PATH = path.join(folder, 'test.sqlite');
+  const client = backend === 'remote' ? createClient({ url: ':memory:' }) : null;
+  const store = client ? createRemoteStore(client) : require('../server/local-store.cjs');
+  const sql = async (query, args = []) => client ? client.execute({sql: query, args}) : {rows: store.db().prepare(query).all(...args)};
+  try {
+    const data = await store.readResume();
+    const safe = publicResume(data);
+    for (const key of ['phone', 'email', 'location', 'linkedin', 'whatsapp', 'telegram']) assert.equal(safe.contacts[key], '');
+    assert.deepEqual(safe.roles, data.roles);
+    const issued = await store.createContactCode({hours: 24, maxUses: 1, label: 'Recruiter'});
+    assert.equal(issued.code.length, 32);
+    assert.ok(!JSON.stringify(await store.listContactCodes()).includes(issued.code));
+    assert.ok(!JSON.stringify(await sql('SELECT * FROM contact_codes')).includes(issued.code));
+    await assert.rejects(store.redeemContactCode('invalid'), e => e.status === 403);
+    const attempts = await Promise.allSettled([store.redeemContactCode(issued.code), store.redeemContactCode(issued.code)]);
+    assert.equal(attempts.filter(r => r.status === 'fulfilled').length, 1);
+    const grant = attempts.find(r => r.status === 'fulfilled').value;
+    assert.equal(await store.contactAccess(grant.token), true);
+    assert.equal(await store.contactAccess('f'.repeat(64)), false);
+    await store.revokeContactCode(issued.id);
+    assert.equal(await store.contactAccess(grant.token), false);
+    const expiring = await store.createContactCode({hours: 1, maxUses: 2});
+    const session = await store.redeemContactCode(expiring.code);
+    await sql('UPDATE contact_codes SET expires_at=0 WHERE id=? RETURNING id', [expiring.id]);
+    assert.equal(await store.contactAccess(session.token), false);
+    await assert.rejects(store.redeemContactCode(expiring.code), e => e.status === 403);
+    await assert.rejects(store.createContactCode({hours: 0}), e => e.status === 400);
+    await sql('UPDATE contact_attempts SET attempts=100 RETURNING id');
+    await assert.rejects(store.redeemContactCode('x'), e => e.status === 429);
+  } finally { if (client) client.close(); else store.db().close(); rmSync(folder, {recursive: true, force: true}); }
+});

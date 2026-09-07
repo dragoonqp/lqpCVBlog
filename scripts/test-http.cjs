@@ -115,10 +115,32 @@ async function send(
     assert.equal(saved.skills[0].level, 42);
     const publicPage = await (await send('/')).text();
     assert.ok(publicPage.includes('Integration Company'));
-    assert.ok(publicPage.includes('Integration test location'));
-    assert.ok(publicPage.includes('https://t.me/test'));
-    assert.ok(publicPage.includes('https://www.linkedin.com/in/test'));
-    assert.ok(publicPage.includes('https://wa.me/123456789'));
+    assert.ok(!publicPage.includes('Integration test location'));
+    assert.ok(!publicPage.includes('https://t.me/test'));
+    assert.ok(!publicPage.includes('https://www.linkedin.com/in/test'));
+    assert.ok(!publicPage.includes('https://wa.me/123456789'));
+    assert.ok(!publicPage.includes(draft.contacts.email));
+    assert.equal((await send('/api/contact-access')).status, 401);
+    assert.equal((await send('/api/admin/contact-codes')).status, 401);
+    assert.equal((await send('/api/admin/contact-codes', 'POST', {})).status, 401);
+    assert.equal((await send('/api/admin/contact-codes', 'POST', {}, cookie, 'https://evil.example')).status, 403);
+    const issuedResponse = await send('/api/admin/contact-codes', 'POST', {label: 'Test visitor', hours: 1, maxUses: 1}, cookie);
+    assert.equal(issuedResponse.status, 200);
+    const issued = await issuedResponse.json();
+    assert.equal((await send('/api/contact-access', 'POST', {code: issued.code}, undefined, 'https://evil.example')).status, 403);
+    const unlocked = await send('/api/contact-access', 'POST', {code: issued.code});
+    assert.equal(unlocked.status, 200);
+    assert.deepEqual((await unlocked.json()).contacts, draft.contacts);
+    const grantCookie = unlocked.headers.get('set-cookie');
+    assert.match(grantCookie, /HttpOnly/i);
+    assert.match(grantCookie, /SameSite=strict/i);
+    const visitor = grantCookie.split(';')[0];
+    assert.equal((await send('/api/contact-access', 'GET', undefined, visitor)).status, 200);
+    assert.equal((await send('/api/contact-access', 'POST', {code: issued.code})).status, 403);
+    const listing = await (await send('/api/admin/contact-codes', 'GET', undefined, cookie)).text();
+    assert.ok(!listing.includes(issued.code));
+    assert.equal((await send('/api/admin/contact-codes', 'DELETE', {id: issued.id}, cookie)).status, 200);
+    assert.equal((await send('/api/contact-access', 'GET', undefined, visitor)).status, 401);
     const persisted = await (
       await send('/api/admin/resume', 'GET', undefined, cookie)
     ).json();

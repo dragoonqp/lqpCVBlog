@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import type { Contacts, ResumeData, Role, Skill } from '@/lib/resume-types';
 import { saveWithRebase, DraftConflict } from '@/lib/save-resume.cjs';
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import ContactCodes from '@/components/contact-codes';
 import { skillGroups } from '@/lib/resume-types';
 
 async function request(url: string, method: string, body: unknown) {
@@ -753,6 +754,7 @@ export default function Admin({
                 <div className="form-grid">{([['name', '语言 / Language', 'English'], ['nameZh', '中文名称（可选）', '英语'], ['proficiency', '熟练程度（可选）', 'Professional working proficiency'], ['proficiencyZh', '中文熟练程度（可选）', '可作为工作语言']] as const).map(([key, label, placeholder]) => <label key={key}>{label}<input required={key === 'name'} maxLength={100} placeholder={placeholder} value={language[key] ?? ''} onChange={e => setData({ ...data, contacts: { ...data.contacts, languages: data.contacts.languages?.map(row => row.id === language.id ? { ...row, [key]: e.target.value } : row) } })} /></label>)}</div>
               </article>)}
             </div>}
+            {tab === 'contacts' && <ContactCodes />}
             {tab === 'account' && (
               <>
                 <h2>账号安全</h2>
