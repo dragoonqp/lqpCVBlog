@@ -293,11 +293,6 @@ export default function ResumeView({ data }: { data: ResumeData }) {
                 <dd>2</dd>
               </div>
             </dl>
-            <p className="language">
-              <strong>{t('Languages')}</strong>
-              <br />
-              {t('English · CEFR C1')}
-            </p>
           </section>
         </aside>
         <div className="resume-main">
